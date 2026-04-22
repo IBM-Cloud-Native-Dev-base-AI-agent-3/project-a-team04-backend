@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 반드시 지켜야 할 규칙
+
+- Entity, 컬럼, 관계는 **반드시 아래 ERD를 그대로** 따른다.
+- ERD에 없는 컬럼 추가, 타입 변경, 연관관계(@ManyToOne 등) 임의 변환 금지.
+- ERD와 다른 구조가 필요한 경우 **먼저 사용자에게 확인**하고 승인 후 작업한다.
+
 ## 빌드 및 실행
 
 ```bash
