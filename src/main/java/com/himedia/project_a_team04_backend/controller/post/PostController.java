@@ -1,19 +1,29 @@
 package com.himedia.project_a_team04_backend.controller.post;
 
+import com.himedia.project_a_team04_backend.dto.post.PostDto;
+import com.himedia.project_a_team04_backend.service.post.PostService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/posts")
+@RequiredArgsConstructor
 public class PostController {
+    private final PostService postService;
 
-    @GetMapping("test")
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("PostController is working!");
+    @PostMapping
+    public ResponseEntity<Void> insert(@RequestBody PostDto.Request request) {
+        postService.insert(request);
+        return ResponseEntity.ok().build();
     }
 
+    @GetMapping
+    public ResponseEntity<List<PostDto.Response>> getPost(@RequestParam Long userId) {
+        return ResponseEntity.ok(postService.getPost(userId));
+    }
 }
 
 
