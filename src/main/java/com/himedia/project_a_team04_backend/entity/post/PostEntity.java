@@ -35,10 +35,10 @@ public class PostEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(nullable = false)
+    @Column(name = "view_count", nullable = false)
     private int viewCount = 0;
 
-    @Column(nullable = false)
+    @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;
 
     @CreationTimestamp
