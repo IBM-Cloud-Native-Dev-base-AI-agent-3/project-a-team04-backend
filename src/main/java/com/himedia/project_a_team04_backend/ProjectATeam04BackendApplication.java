@@ -8,8 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ProjectATeam04BackendApplication {
 
 	public static void main(String[] args) {
-		System.out.println("서버 자동재시작 테스트...");
-
 		SpringApplication.run(ProjectATeam04BackendApplication.class, args);
 	}
 }
