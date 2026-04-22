@@ -8,6 +8,7 @@ import com.himedia.project_a_team04_backend.repository.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,20 +20,24 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    // TODO: Security 적용 후 UserEntity를 @AuthenticationPrincipal로 직접 주입받도록 변경
-    public void insert(Long userId, PostDto.Request request) {
-        UserEntity user = userRepository.findById(userId)
+    // TODO: Security 적용 후 userId 제거, @AuthenticationPrincipal UserEntity로 교체
+    @Transactional
+    public PostDto.Response insert(Long userId, PostDto.Request request) {
+        UserEntity user = userRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
 
-        postRepository.save(PostEntity.builder()
+        PostEntity savedPost = postRepository.save(PostEntity.builder()
                 .user(user)
                 .title(request.getTitle())
                 .content(request.getContent())
                 .build());
+
+        return new PostDto.Response(savedPost);
     }
 
-    public List<PostDto.Response> getPost(Long userId) {
-        return postRepository.findByUser_IdAndIsDeletedFalse(userId)
+    @Transactional(readOnly = true)
+    public List<PostDto.Response> getAllPosts() {
+        return postRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc()
                 .stream()
                 .map(PostDto.Response::new)
                 .collect(Collectors.toList());
