@@ -14,9 +14,10 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
 
+    // TODO: Security 적용 후 @RequestParam userId 제거, @AuthenticationPrincipal로 교체
     @PostMapping
-    public ResponseEntity<Void> insert(@RequestBody PostDto.Request request) {
-        postService.insert(request);
+    public ResponseEntity<Void> insert(@RequestParam Long userId, @RequestBody PostDto.Request request) {
+        postService.insert(userId, request);
         return ResponseEntity.ok().build();
     }
 
@@ -25,5 +26,3 @@ public class PostController {
         return ResponseEntity.ok(postService.getPost(userId));
     }
 }
-
-

@@ -1,5 +1,6 @@
 package com.himedia.project_a_team04_backend.entity.auth;
 
+import com.himedia.project_a_team04_backend.entity.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,8 +19,9 @@ public class PasswordResetEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
     @Column(name = "token_hash", nullable = false, length = 255)
     private String tokenHash;
@@ -35,8 +37,8 @@ public class PasswordResetEntity {
     private LocalDateTime createdAt;
 
     @Builder
-    public PasswordResetEntity(Long userId, String tokenHash, LocalDateTime expiredAt) {
-        this.userId = userId;
+    public PasswordResetEntity(UserEntity user, String tokenHash, LocalDateTime expiredAt) {
+        this.user = user;
         this.tokenHash = tokenHash;
         this.expiredAt = expiredAt;
     }

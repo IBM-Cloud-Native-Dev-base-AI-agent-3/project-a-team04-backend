@@ -18,8 +18,10 @@ public class ForumMediaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "forum_id", nullable = false)
-    private Long forumId;
+    // CASCADE: 포럼 삭제 시 미디어 함께 삭제
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "forum_id", nullable = false)
+    private ForumEntity forum;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "media_type", nullable = false)
@@ -39,9 +41,9 @@ public class ForumMediaEntity {
     private LocalDateTime createdAt;
 
     @Builder
-    public ForumMediaEntity(Long forumId, ForumMediaType mediaType, String url,
+    public ForumMediaEntity(ForumEntity forum, ForumMediaType mediaType, String url,
                              String thumbnailUrl, int sortOrder) {
-        this.forumId = forumId;
+        this.forum = forum;
         this.mediaType = mediaType;
         this.url = url;
         this.thumbnailUrl = thumbnailUrl;

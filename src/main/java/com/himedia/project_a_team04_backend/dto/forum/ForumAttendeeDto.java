@@ -26,8 +26,8 @@ public class ForumAttendeeDto {
 
         public Response(ForumAttendeeEntity entity) {
             this.id = entity.getId();
-            this.forumId = entity.getForumId();
-            this.userId = entity.getUserId();
+            this.forumId = entity.getForum().getId();
+            this.userId = entity.getUser().getId();
             this.status = entity.getStatus();
             this.createdAt = entity.getCreatedAt();
             this.updatedAt = entity.getUpdatedAt();

@@ -1,5 +1,6 @@
 package com.himedia.project_a_team04_backend.entity.forum;
 
+import com.himedia.project_a_team04_backend.entity.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,11 +20,15 @@ public class ForumRegistrationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "forum_id", nullable = false)
-    private Long forumId;
+    // RESTRICT: 신청자가 있는 포럼은 삭제 불가
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "forum_id", nullable = false)
+    private ForumEntity forum;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    // CASCADE: 유저 삭제 시 포럼 신청 이력 함께 삭제
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -35,8 +40,10 @@ public class ForumRegistrationEntity {
     @Column(name = "reject_reason", columnDefinition = "TEXT")
     private String rejectReason;
 
-    @Column(name = "reviewed_by")
-    private Long reviewedBy;
+    // nullable: 심사 전에는 담당자 없음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reviewed_by")
+    private UserEntity reviewedByUser;
 
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
@@ -50,9 +57,10 @@ public class ForumRegistrationEntity {
     private LocalDateTime updatedAt;
 
     @Builder
-    public ForumRegistrationEntity(Long forumId, Long userId, ForumRegistrationStatus status, String note) {
-        this.forumId = forumId;
-        this.userId = userId;
+    public ForumRegistrationEntity(ForumEntity forum, UserEntity user,
+                                    ForumRegistrationStatus status, String note) {
+        this.forum = forum;
+        this.user = user;
         this.status = status;
         this.note = note;
     }

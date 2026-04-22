@@ -1,5 +1,6 @@
 package com.himedia.project_a_team04_backend.dto.post;
 
+import com.himedia.project_a_team04_backend.entity.post.PostEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,31 +11,28 @@ public class PostDto {
     @Getter
     @NoArgsConstructor
     public static class Request {
-        private Long userId;
         private String title;
         private String content;
     }
 
     @Getter
-    @NoArgsConstructor
     public static class Response {
-        private Long id;
-        private Long userId;
-        private String title;
-        private String content;
-        private int viewCount;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
+        private final Long id;
+        private final Long userId;
+        private final String title;
+        private final String content;
+        private final int viewCount;
+        private final LocalDateTime createdAt;
+        private final LocalDateTime updatedAt;
 
-        public Response(Long id, Long userId, String title, String content,
-                        int viewCount, LocalDateTime createdAt, LocalDateTime updatedAt) {
-            this.id = id;
-            this.userId = userId;
-            this.title = title;
-            this.content = content;
-            this.viewCount = viewCount;
-            this.createdAt = createdAt;
-            this.updatedAt = updatedAt;
+        public Response(PostEntity post) {
+            this.id = post.getId();
+            this.userId = post.getUser().getId();
+            this.title = post.getTitle();
+            this.content = post.getContent();
+            this.viewCount = post.getViewCount();
+            this.createdAt = post.getCreatedAt();
+            this.updatedAt = post.getUpdatedAt();
         }
     }
 }

@@ -54,7 +54,7 @@ public class ForumDto {
             this.eventDate = entity.getEventDate();
             this.thumbnailUrl = entity.getThumbnailUrl();
             this.maxParticipants = entity.getMaxParticipants();
-            this.createdBy = entity.getCreatedBy();
+            this.createdBy = entity.getCreatedByUser().getId();
             this.translations = translations;
             this.media = media;
             this.createdAt = entity.getCreatedAt();

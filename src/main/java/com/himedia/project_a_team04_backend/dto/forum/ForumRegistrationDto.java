@@ -37,12 +37,12 @@ public class ForumRegistrationDto {
 
         public Response(ForumRegistrationEntity entity) {
             this.id = entity.getId();
-            this.forumId = entity.getForumId();
-            this.userId = entity.getUserId();
+            this.forumId = entity.getForum().getId();
+            this.userId = entity.getUser().getId();
             this.status = entity.getStatus();
             this.note = entity.getNote();
             this.rejectReason = entity.getRejectReason();
-            this.reviewedBy = entity.getReviewedBy();
+            this.reviewedBy = entity.getReviewedByUser() != null ? entity.getReviewedByUser().getId() : null;
             this.reviewedAt = entity.getReviewedAt();
             this.createdAt = entity.getCreatedAt();
             this.updatedAt = entity.getUpdatedAt();

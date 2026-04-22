@@ -18,8 +18,10 @@ public class UserWithdrawalEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
-    private Long userId;
+    // nullable: 탈퇴 이력은 유저 삭제 후에도 기록 보존
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String reason;
@@ -32,8 +34,8 @@ public class UserWithdrawalEntity {
     private LocalDateTime createdAt;
 
     @Builder
-    public UserWithdrawalEntity(Long userId, String reason, LocalDateTime withdrawnAt) {
-        this.userId = userId;
+    public UserWithdrawalEntity(UserEntity user, String reason, LocalDateTime withdrawnAt) {
+        this.user = user;
         this.reason = reason;
         this.withdrawnAt = withdrawnAt;
     }

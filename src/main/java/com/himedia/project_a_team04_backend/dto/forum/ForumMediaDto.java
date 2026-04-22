@@ -30,7 +30,7 @@ public class ForumMediaDto {
 
         public Response(ForumMediaEntity entity) {
             this.id = entity.getId();
-            this.forumId = entity.getForumId();
+            this.forumId = entity.getForum().getId();
             this.mediaType = entity.getMediaType();
             this.url = entity.getUrl();
             this.thumbnailUrl = entity.getThumbnailUrl();

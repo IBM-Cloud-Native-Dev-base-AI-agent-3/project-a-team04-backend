@@ -32,7 +32,7 @@ public class ForumTranslationDto {
 
         public Response(ForumTranslationEntity entity) {
             this.id = entity.getId();
-            this.forumId = entity.getForumId();
+            this.forumId = entity.getForum().getId();
             this.locale = entity.getLocale();
             this.title = entity.getTitle();
             this.description = entity.getDescription();

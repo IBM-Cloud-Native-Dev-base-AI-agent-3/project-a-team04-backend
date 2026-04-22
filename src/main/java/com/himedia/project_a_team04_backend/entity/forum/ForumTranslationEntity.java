@@ -19,8 +19,10 @@ public class ForumTranslationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "forum_id", nullable = false)
-    private Long forumId;
+    // CASCADE: 포럼 삭제 시 번역 정보 함께 삭제
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "forum_id", nullable = false)
+    private ForumEntity forum;
 
     @Column(nullable = false, length = 10)
     private String locale;
@@ -46,9 +48,9 @@ public class ForumTranslationEntity {
     private LocalDateTime updatedAt;
 
     @Builder
-    public ForumTranslationEntity(Long forumId, String locale, String title,
+    public ForumTranslationEntity(ForumEntity forum, String locale, String title,
                                    String description, String location, String speakers) {
-        this.forumId = forumId;
+        this.forum = forum;
         this.locale = locale;
         this.title = title;
         this.description = description;
