@@ -1,6 +1,7 @@
 package com.himedia.project_a_team04_backend.service.post;
 
 import com.himedia.project_a_team04_backend.dto.post.PostDto;
+import com.himedia.project_a_team04_backend.dto.post.PostDetailDto;
 import com.himedia.project_a_team04_backend.entity.post.PostEntity;
 import com.himedia.project_a_team04_backend.entity.user.UserEntity;
 import com.himedia.project_a_team04_backend.repository.post.PostRepository;
@@ -41,5 +42,12 @@ public class PostService {
                 .stream()
                 .map(PostDto.Response::new)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public PostDetailDto.Response getPostDetail(Long postId) {
+        PostEntity post = postRepository.findByIdAndIsDeletedFalse(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found: " + postId));
+        return new PostDetailDto.Response(post);
     }
 }

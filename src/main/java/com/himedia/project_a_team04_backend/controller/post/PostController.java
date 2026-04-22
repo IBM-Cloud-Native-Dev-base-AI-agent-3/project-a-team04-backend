@@ -1,6 +1,7 @@
 package com.himedia.project_a_team04_backend.controller.post;
 
 import com.himedia.project_a_team04_backend.dto.post.PostDto;
+import com.himedia.project_a_team04_backend.dto.post.PostDetailDto;
 import com.himedia.project_a_team04_backend.service.post.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,11 @@ public class PostController {
     @GetMapping
     public ResponseEntity<List<PostDto.Response>> getAllPosts() {
         return ResponseEntity.ok(postService.getAllPosts());
+    }
+
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostDetailDto.Response> getPostDetail(@PathVariable Long postId) {
+        return ResponseEntity.ok(postService.getPostDetail(postId));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
