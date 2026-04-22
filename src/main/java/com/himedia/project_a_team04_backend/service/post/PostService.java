@@ -2,6 +2,7 @@ package com.himedia.project_a_team04_backend.service.post;
 
 import com.himedia.project_a_team04_backend.dto.post.PostDto;
 import com.himedia.project_a_team04_backend.dto.post.PostDetailDto;
+import com.himedia.project_a_team04_backend.dto.post.PostModifyDto;
 import com.himedia.project_a_team04_backend.entity.post.PostEntity;
 import com.himedia.project_a_team04_backend.entity.user.UserEntity;
 import com.himedia.project_a_team04_backend.repository.post.PostRepository;
@@ -49,5 +50,22 @@ public class PostService {
         PostEntity post = postRepository.findByIdAndIsDeletedFalse(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found: " + postId));
         return new PostDetailDto.Response(post);
+    }
+
+    @Transactional
+    public PostModifyDto.Response update(Long postId, Long userId, PostModifyDto.Request request) {
+        PostEntity post = postRepository.findByIdAndUser_IdAndIsDeletedFalse(postId, userId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found: " + postId));
+
+        post.modify(request.getTitle(), request.getContent());
+        return new PostModifyDto.Response(post);
+    }
+
+    @Transactional
+    public void delete(Long postId, Long userId) {
+        PostEntity post = postRepository.findByIdAndUser_IdAndIsDeletedFalse(postId, userId)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found: " + postId));
+
+        post.softDelete();
     }
 }

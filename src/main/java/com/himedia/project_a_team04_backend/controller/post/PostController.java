@@ -2,6 +2,7 @@ package com.himedia.project_a_team04_backend.controller.post;
 
 import com.himedia.project_a_team04_backend.dto.post.PostDto;
 import com.himedia.project_a_team04_backend.dto.post.PostDetailDto;
+import com.himedia.project_a_team04_backend.dto.post.PostModifyDto;
 import com.himedia.project_a_team04_backend.service.post.PostService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,23 @@ public class PostController {
     @GetMapping("/{postId}")
     public ResponseEntity<PostDetailDto.Response> getPostDetail(@PathVariable Long postId) {
         return ResponseEntity.ok(postService.getPostDetail(postId));
+    }
+
+    // TODO: Security 적용 후 @RequestParam userId 제거, @AuthenticationPrincipal로 교체
+    @PatchMapping("/{postId}")
+    public ResponseEntity<PostModifyDto.Response> update(
+            @PathVariable Long postId,
+            @RequestParam Long userId,
+            @RequestBody PostModifyDto.Request request
+    ) {
+        return ResponseEntity.ok(postService.update(postId, userId, request));
+    }
+
+    // TODO: Security 적용 후 @RequestParam userId 제거, @AuthenticationPrincipal로 교체
+    @DeleteMapping("/{postId}")
+    public ResponseEntity<Void> delete(@PathVariable Long postId, @RequestParam Long userId) {
+        postService.delete(postId, userId);
+        return ResponseEntity.noContent().build();
     }
 
     @ExceptionHandler(EntityNotFoundException.class)

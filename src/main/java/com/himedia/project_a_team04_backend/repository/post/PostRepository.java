@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface PostRepository extends JpaRepository<PostEntity, Long> {
     List<PostEntity> findAllByIsDeletedFalseOrderByCreatedAtDesc();
     Optional<PostEntity> findByIdAndIsDeletedFalse(Long id);
+    Optional<PostEntity> findByIdAndUser_IdAndIsDeletedFalse(Long id, Long userId);
 }

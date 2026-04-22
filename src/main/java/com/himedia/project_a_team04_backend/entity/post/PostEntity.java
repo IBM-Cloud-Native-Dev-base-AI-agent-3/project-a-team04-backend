@@ -57,4 +57,13 @@ public class PostEntity {
         this.title = title;
         this.content = content;
     }
+
+    public void modify(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+
+    public void softDelete() {
+        this.isDeleted = true;
+    }
 }
