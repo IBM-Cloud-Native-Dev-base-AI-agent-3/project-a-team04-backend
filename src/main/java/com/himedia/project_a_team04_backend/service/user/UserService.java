@@ -26,7 +26,7 @@ public class UserService {
                 .email(request.getEmail())
                 .password(request.getPassword())
                 .nickname(request.getNickname())
-                .role(UserRole.ROLE_USER)
+                .role(request.getRole() != null ? request.getRole() : UserRole.ROLE_USER)
                 .build());
 
         return new UserDto.ProfileResponse(savedUser);
