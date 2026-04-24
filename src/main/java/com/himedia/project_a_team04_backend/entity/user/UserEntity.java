@@ -106,4 +106,9 @@ public class UserEntity {
         this.profileImageUrl = profileImageUrl;
         this.role = role;
     }
+
+    public void updateProfile(String nickname, String profileImageUrl) {
+        if (nickname != null && !nickname.isBlank()) this.nickname = nickname;
+        if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
+    }
 }
