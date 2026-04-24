@@ -7,8 +7,6 @@ import com.himedia.project_a_team04_backend.entity.forum.ForumEntity;
 import com.himedia.project_a_team04_backend.entity.forum.ForumMediaEntity;
 import com.himedia.project_a_team04_backend.entity.forum.ForumTranslationEntity;
 import com.himedia.project_a_team04_backend.entity.user.UserEntity;
-import com.himedia.project_a_team04_backend.entity.user.UserRole;
-import com.himedia.project_a_team04_backend.exception.forum.ForumAccessDeniedException;
 import com.himedia.project_a_team04_backend.repository.forum.ForumMediaRepository;
 import com.himedia.project_a_team04_backend.repository.forum.ForumRepository;
 import com.himedia.project_a_team04_backend.repository.forum.ForumTranslationRepository;
@@ -31,10 +29,9 @@ public class ForumService {
     private final ForumMediaRepository forumMediaRepository;
     private final UserRepository userRepository;
 
-    // TODO: Security 적용 후 userId 제거, @AuthenticationPrincipal UserEntity로 교체
     @Transactional
-    public ForumDto.Response create(Long userId, ForumDto.CreateRequest request) {
-        UserEntity user = findAdminUser(userId);
+    public ForumDto.Response create(String email, ForumDto.CreateRequest request) {
+        UserEntity user = findUserByEmail(email);
 
         ForumEntity forum = forumRepository.save(ForumEntity.builder()
                 .slug(request.getSlug())
@@ -51,10 +48,9 @@ public class ForumService {
         return toResponse(forum, savedTranslations, savedMedia);
     }
 
-    // TODO: Security 적용 후 userId 제거, @AuthenticationPrincipal UserEntity로 교체
     @Transactional
-    public ForumDto.Response update(Long userId, Long forumId, ForumDto.CreateRequest request) {
-        findAdminUser(userId);
+    public ForumDto.Response update(String email, Long forumId, ForumDto.CreateRequest request) {
+        findUserByEmail(email);
 
         ForumEntity forum = forumRepository.findById(forumId)
                 .orElseThrow(() -> new EntityNotFoundException("Forum not found: " + forumId));
@@ -72,10 +68,9 @@ public class ForumService {
         return toResponse(forum, savedTranslations, savedMedia);
     }
 
-    // TODO: Security 적용 후 userId 제거, @AuthenticationPrincipal UserEntity로 교체
     @Transactional
-    public void delete(Long userId, Long forumId) {
-        findAdminUser(userId);
+    public void delete(String email, Long forumId) {
+        findUserByEmail(email);
 
         ForumEntity forum = forumRepository.findById(forumId)
                 .orElseThrow(() -> new EntityNotFoundException("Forum not found: " + forumId));
@@ -109,13 +104,10 @@ public class ForumService {
         return toResponse(forum, translations, media);
     }
 
-    private UserEntity findAdminUser(Long userId) {
-        UserEntity user = userRepository.findByIdAndIsDeletedFalse(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
-        if (user.getRole() != UserRole.ROLE_ADMIN) {
-            throw new ForumAccessDeniedException("Only ROLE_ADMIN can perform this action");
-        }
-        return user;
+    private UserEntity findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .filter(u -> !u.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + email));
     }
 
     private ForumDto.Response toResponse(ForumEntity forum,
