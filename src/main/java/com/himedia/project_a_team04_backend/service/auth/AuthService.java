@@ -84,4 +84,11 @@ public class AuthService implements UserDetailsService {
 
         return new AuthDto.TokenResponse(accessToken, refreshToken);
     }
+
+    @Transactional
+    public void logout(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        refreshTokenRepository.deleteByUser_Id(user.getId());
+    }
 }
