@@ -77,4 +77,13 @@ public class ForumEntity {
         this.maxParticipants = maxParticipants;
         this.createdByUser = createdByUser;
     }
+
+    public void update(String slug, ForumStatus status, LocalDateTime eventDate,
+                       String thumbnailUrl, int maxParticipants) {
+        this.slug = slug;
+        this.status = status;
+        this.eventDate = eventDate;
+        this.thumbnailUrl = thumbnailUrl;
+        this.maxParticipants = maxParticipants;
+    }
 }

@@ -34,12 +34,7 @@ public class ForumService {
     // TODO: Security 적용 후 userId 제거, @AuthenticationPrincipal UserEntity로 교체
     @Transactional
     public ForumDto.Response create(Long userId, ForumDto.CreateRequest request) {
-        UserEntity user = userRepository.findByIdAndIsDeletedFalse(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
-
-        if (user.getRole() != UserRole.ROLE_ADMIN) {
-            throw new ForumAccessDeniedException("Only ROLE_ADMIN can create a forum");
-        }
+        UserEntity user = findAdminUser(userId);
 
         ForumEntity forum = forumRepository.save(ForumEntity.builder()
                 .slug(request.getSlug())
@@ -53,13 +48,85 @@ public class ForumService {
         List<ForumTranslationEntity> savedTranslations = saveTranslations(forum, request.getTranslations());
         List<ForumMediaEntity> savedMedia = saveMedia(forum, request.getMedia());
 
-        List<ForumTranslationDto.Response> translationResponses = savedTranslations.stream()
+        return toResponse(forum, savedTranslations, savedMedia);
+    }
+
+    // TODO: Security 적용 후 userId 제거, @AuthenticationPrincipal UserEntity로 교체
+    @Transactional
+    public ForumDto.Response update(Long userId, Long forumId, ForumDto.CreateRequest request) {
+        findAdminUser(userId);
+
+        ForumEntity forum = forumRepository.findById(forumId)
+                .orElseThrow(() -> new EntityNotFoundException("Forum not found: " + forumId));
+
+        forum.update(request.getSlug(), request.getStatus(), request.getEventDate(),
+                request.getThumbnailUrl(), request.getMaxParticipants());
+
+        // 번역/미디어 전체 교체
+        forumTranslationRepository.deleteAll(forumTranslationRepository.findByForum_Id(forumId));
+        forumMediaRepository.deleteAll(forumMediaRepository.findByForum_Id(forumId));
+
+        List<ForumTranslationEntity> savedTranslations = saveTranslations(forum, request.getTranslations());
+        List<ForumMediaEntity> savedMedia = saveMedia(forum, request.getMedia());
+
+        return toResponse(forum, savedTranslations, savedMedia);
+    }
+
+    // TODO: Security 적용 후 userId 제거, @AuthenticationPrincipal UserEntity로 교체
+    @Transactional
+    public void delete(Long userId, Long forumId) {
+        findAdminUser(userId);
+
+        ForumEntity forum = forumRepository.findById(forumId)
+                .orElseThrow(() -> new EntityNotFoundException("Forum not found: " + forumId));
+
+        forumRepository.delete(forum);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ForumDto.ListResponse> getList(String locale) {
+        return forumRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(forum -> {
+                    ForumTranslationEntity translation = forumTranslationRepository
+                            .findByForum_IdAndLocale(forum.getId(), locale)
+                            .orElseGet(() -> forumTranslationRepository.findByForum_Id(forum.getId())
+                                    .stream().findFirst().orElse(null));
+                    String title = translation != null ? translation.getTitle() : "";
+                    String location = translation != null ? translation.getLocation() : "";
+                    return new ForumDto.ListResponse(forum, title, location);
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public ForumDto.Response getDetail(Long forumId) {
+        ForumEntity forum = forumRepository.findById(forumId)
+                .orElseThrow(() -> new EntityNotFoundException("Forum not found: " + forumId));
+
+        List<ForumTranslationEntity> translations = forumTranslationRepository.findByForum_Id(forumId);
+        List<ForumMediaEntity> media = forumMediaRepository.findByForum_Id(forumId);
+
+        return toResponse(forum, translations, media);
+    }
+
+    private UserEntity findAdminUser(Long userId) {
+        UserEntity user = userRepository.findByIdAndIsDeletedFalse(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
+        if (user.getRole() != UserRole.ROLE_ADMIN) {
+            throw new ForumAccessDeniedException("Only ROLE_ADMIN can perform this action");
+        }
+        return user;
+    }
+
+    private ForumDto.Response toResponse(ForumEntity forum,
+                                          List<ForumTranslationEntity> translations,
+                                          List<ForumMediaEntity> media) {
+        List<ForumTranslationDto.Response> translationResponses = translations.stream()
                 .map(ForumTranslationDto.Response::new)
                 .collect(Collectors.toList());
-        List<ForumMediaDto.Response> mediaResponses = savedMedia.stream()
+        List<ForumMediaDto.Response> mediaResponses = media.stream()
                 .map(ForumMediaDto.Response::new)
                 .collect(Collectors.toList());
-
         return new ForumDto.Response(forum, translationResponses, mediaResponses);
     }
 
