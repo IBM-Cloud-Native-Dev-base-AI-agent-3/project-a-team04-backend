@@ -5,6 +5,7 @@ import com.himedia.project_a_team04_backend.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +23,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.signup(request));
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
     public ResponseEntity<UserDto.ProfileResponse> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(userService.getProfile(userDetails.getUsername()));
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/me")
     public ResponseEntity<UserDto.ProfileResponse> updateProfile(
             @AuthenticationPrincipal UserDetails userDetails,

@@ -1,12 +1,14 @@
 package com.himedia.project_a_team04_backend.controller.forum;
 
 import com.himedia.project_a_team04_backend.dto.forum.ForumDto;
-import com.himedia.project_a_team04_backend.exception.forum.ForumAccessDeniedException;
 import com.himedia.project_a_team04_backend.service.forum.ForumService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,13 +21,13 @@ public class ForumController {
 
     private final ForumService forumService;
 
-    // TODO: Security 적용 후 @RequestParam userId 제거, @AuthenticationPrincipal로 교체
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public ResponseEntity<ForumDto.Response> create(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody ForumDto.CreateRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(forumService.create(userId, request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(forumService.create(userDetails.getUsername(), request));
     }
 
     @GetMapping
@@ -40,29 +42,24 @@ public class ForumController {
         return ResponseEntity.ok(forumService.getDetail(forumId));
     }
 
-    // TODO: Security 적용 후 @RequestParam userId 제거, @AuthenticationPrincipal로 교체
+    @SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/{forumId}")
     public ResponseEntity<ForumDto.Response> update(
             @PathVariable Long forumId,
-            @RequestParam Long userId,
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestBody ForumDto.CreateRequest request
     ) {
-        return ResponseEntity.ok(forumService.update(userId, forumId, request));
+        return ResponseEntity.ok(forumService.update(userDetails.getUsername(), forumId, request));
     }
 
-    // TODO: Security 적용 후 @RequestParam userId 제거, @AuthenticationPrincipal로 교체
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{forumId}")
     public ResponseEntity<Void> delete(
             @PathVariable Long forumId,
-            @RequestParam Long userId
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
-        forumService.delete(userId, forumId);
+        forumService.delete(userDetails.getUsername(), forumId);
         return ResponseEntity.noContent().build();
-    }
-
-    @ExceptionHandler(ForumAccessDeniedException.class)
-    public ResponseEntity<Map<String, String>> handleAccessDenied(ForumAccessDeniedException e) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", e.getMessage()));
     }
 
     @ExceptionHandler(EntityNotFoundException.class)

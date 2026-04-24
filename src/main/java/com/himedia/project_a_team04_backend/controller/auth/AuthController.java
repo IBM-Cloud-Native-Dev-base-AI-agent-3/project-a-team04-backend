@@ -2,6 +2,7 @@ package com.himedia.project_a_team04_backend.controller.auth;
 
 import com.himedia.project_a_team04_backend.dto.auth.AuthDto;
 import com.himedia.project_a_team04_backend.service.auth.AuthService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request, deviceInfo));
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@AuthenticationPrincipal UserDetails userDetails) {
         authService.logout(userDetails.getUsername());
