@@ -5,6 +5,7 @@ import com.himedia.project_a_team04_backend.entity.user.UserEntity;
 import com.himedia.project_a_team04_backend.entity.user.UserRole;
 import com.himedia.project_a_team04_backend.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UserDto.ProfileResponse signup(UserDto.SignupRequest request) {
@@ -24,7 +26,7 @@ public class UserService {
 
         UserEntity savedUser = userRepository.save(UserEntity.builder()
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .nickname(request.getNickname())
                 .role(request.getRole() != null ? request.getRole() : UserRole.ROLE_USER)
                 .build());
