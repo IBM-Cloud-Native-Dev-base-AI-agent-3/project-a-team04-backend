@@ -49,7 +49,7 @@ public class AuthService implements UserDetailsService {
                        PasswordResetRepository passwordResetRepository,
                        @Lazy AuthenticationManager authenticationManager,
                        JwtUtil jwtUtil,
-                       PasswordEncoder passwordEncoder,
+                       @Lazy PasswordEncoder passwordEncoder,
                        BrevoEmailService brevoEmailService) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
