@@ -29,6 +29,9 @@ public class BrevoEmailService {
     @Value("${app.backend-url}")
     private String backendUrl;
 
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
+
     private final RestTemplate restTemplate;
 
     public void sendVerificationEmail(String toEmail, String token) {
@@ -46,6 +49,40 @@ public class BrevoEmailService {
         headers.set("api-key", apiKey);
 
         restTemplate.postForEntity(BREVO_API_URL, new HttpEntity<>(body, headers), String.class);
+    }
+
+    public void sendPasswordResetEmail(String toEmail, String token) {
+        String resetLink = frontendUrl + "/password-reset?token=" + token;
+
+        Map<String, Object> body = Map.of(
+                "sender", Map.of("name", senderName, "email", senderEmail),
+                "to", List.of(Map.of("email", toEmail)),
+                "subject", "[" + senderName + "] 비밀번호 재설정 안내",
+                "htmlContent", buildPasswordResetHtml(resetLink)
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("api-key", apiKey);
+
+        restTemplate.postForEntity(BREVO_API_URL, new HttpEntity<>(body, headers), String.class);
+    }
+
+    private String buildPasswordResetHtml(String resetLink) {
+        return """
+                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+                  <h2>비밀번호 재설정</h2>
+                  <p>아래 버튼을 클릭하면 비밀번호를 재설정할 수 있습니다.<br>링크는 <strong>30분</strong> 동안 유효합니다.</p>
+                  <a href="%s"
+                     style="display:inline-block; padding:12px 24px; background:#4f46e5;
+                            color:#fff; border-radius:6px; text-decoration:none;">
+                    비밀번호 재설정하기
+                  </a>
+                  <p style="margin-top:16px; color:#6b7280; font-size:13px;">
+                    본인이 요청하지 않았다면 이 메일을 무시하세요.
+                  </p>
+                </div>
+                """.formatted(resetLink);
     }
 
     private String buildEmailHtml(String verificationLink) {
