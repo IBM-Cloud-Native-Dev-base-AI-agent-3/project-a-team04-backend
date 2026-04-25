@@ -52,7 +52,7 @@ public class BrevoEmailService {
         return """
                 <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
                   <h2>이메일 인증</h2>
-                  <p>아래 버튼을 클릭하면 이메일 인증이 완료됩니다.<br>링크는 <strong>30분</strong> 동안 유효합니다.</p>
+                  <p>아래 버튼을 클릭하면 이메일 인증이 완료됩니다. 링크는 <strong>30분</strong> 동안 유효합니다.</p>
                   <a href="%s"
                      style="display:inline-block; padding:12px 24px; background:#4f46e5;
                             color:#fff; border-radius:6px; text-decoration:none;">
