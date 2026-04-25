@@ -34,7 +34,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // 누구나 접근 가능
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/users/signup").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/users/signup", "/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/password-reset/request", "/auth/password-reset/confirm").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/posts", "/posts/**").permitAll()

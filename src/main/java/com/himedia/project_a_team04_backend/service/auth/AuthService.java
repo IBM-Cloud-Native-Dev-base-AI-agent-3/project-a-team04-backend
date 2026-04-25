@@ -128,6 +128,41 @@ public class AuthService implements UserDetailsService {
     }
 
     @Transactional
+    public AuthDto.TokenResponse refresh(String refreshToken) {
+        // 1. JWT 서명 및 만료 검증
+        if (!jwtUtil.validateToken(refreshToken)) {
+            throw new IllegalArgumentException("유효하지 않거나 만료된 토큰입니다.");
+        }
+
+        // 2. DB에서 토큰 존재 여부 확인 (로그아웃 여부)
+        RefreshTokenEntity savedToken = refreshTokenRepository.findByTokenHash(refreshToken)
+                .orElseThrow(() -> new IllegalArgumentException("이미 로그아웃된 토큰입니다."));
+
+        // 3. DB 만료 시간 확인
+        if (savedToken.getExpiredAt().isBefore(LocalDateTime.now())) {
+            refreshTokenRepository.delete(savedToken);
+            throw new IllegalStateException("만료된 토큰입니다. 다시 로그인해주세요.");
+        }
+
+        // 4. 기존 토큰 삭제 (rotation)
+        String email = jwtUtil.getEmailFromToken(refreshToken);
+        refreshTokenRepository.delete(savedToken);
+
+        // 5. 새 토큰 발급 및 저장
+        String newAccessToken = jwtUtil.generateAccessToken(email);
+        String newRefreshToken = jwtUtil.generateRefreshToken(email);
+
+        refreshTokenRepository.save(RefreshTokenEntity.builder()
+                .user(savedToken.getUser())
+                .tokenHash(newRefreshToken)
+                .deviceInfo(savedToken.getDeviceInfo())
+                .expiredAt(LocalDateTime.now().plusDays(7))
+                .build());
+
+        return new AuthDto.TokenResponse(newAccessToken, newRefreshToken);
+    }
+
+    @Transactional
     public void sendPasswordReset(String email) {
         UserEntity user = userRepository.findByEmail(email)
                 .filter(u -> !u.isDeleted())

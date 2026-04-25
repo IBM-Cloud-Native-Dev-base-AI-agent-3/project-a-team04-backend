@@ -38,6 +38,11 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthDto.TokenResponse> refresh(@RequestBody AuthDto.RefreshRequest request) {
+        return ResponseEntity.ok(authService.refresh(request.getRefreshToken()));
+    }
+
     @PostMapping("/password-reset/request")
     public ResponseEntity<Void> requestPasswordReset(@RequestBody AuthDto.SendPasswordResetRequest request) {
         authService.sendPasswordReset(request.getEmail());
