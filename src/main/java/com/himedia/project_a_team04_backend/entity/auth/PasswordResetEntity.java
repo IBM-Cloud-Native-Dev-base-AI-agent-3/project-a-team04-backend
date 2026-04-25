@@ -42,4 +42,8 @@ public class PasswordResetEntity {
         this.tokenHash = tokenHash;
         this.expiredAt = expiredAt;
     }
+
+    public void markUsed() {
+        this.used = true;
+    }
 }
