@@ -2,11 +2,14 @@ package com.himedia.project_a_team04_backend.service.auth;
 
 import com.himedia.project_a_team04_backend.config.JwtUtil;
 import com.himedia.project_a_team04_backend.dto.auth.AuthDto;
+import com.himedia.project_a_team04_backend.entity.auth.EmailVerificationEntity;
 import com.himedia.project_a_team04_backend.entity.auth.RefreshTokenEntity;
 import com.himedia.project_a_team04_backend.entity.user.UserEntity;
+import com.himedia.project_a_team04_backend.repository.auth.EmailVerificationRepository;
 import com.himedia.project_a_team04_backend.repository.auth.RefreshTokenRepository;
 import com.himedia.project_a_team04_backend.repository.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -25,17 +28,23 @@ public class AuthService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final EmailVerificationRepository emailVerificationRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     // AuthenticationManager가 내부적으로 UserDetailsService(=AuthService)를 사용하는
     // 순환 의존성을 @Lazy로 해결
     public AuthService(UserRepository userRepository,
                        RefreshTokenRepository refreshTokenRepository,
+                       EmailVerificationRepository emailVerificationRepository,
                        @Lazy AuthenticationManager authenticationManager,
                        JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.emailVerificationRepository = emailVerificationRepository;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
     }
@@ -71,6 +80,9 @@ public class AuthService implements UserDetailsService {
         if (!user.isActive()) {
             throw new IllegalStateException("비활성화된 계정입니다.");
         }
+        if (!user.isEmailVerified()) {
+            throw new IllegalStateException("이메일 인증이 필요합니다.");
+        }
 
         String accessToken = jwtUtil.generateAccessToken(user.getEmail());
         String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
@@ -83,6 +95,24 @@ public class AuthService implements UserDetailsService {
                 .build());
 
         return new AuthDto.TokenResponse(accessToken, refreshToken);
+    }
+
+    @Transactional
+    public String verifyEmail(String token) {
+        EmailVerificationEntity verification = emailVerificationRepository.findByTokenHash(token)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 인증 토큰입니다."));
+
+        if (verification.getExpiredAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("만료된 인증 토큰입니다.");
+        }
+        if (verification.isVerified()) {
+            throw new IllegalStateException("이미 인증된 토큰입니다.");
+        }
+
+        verification.markVerified();
+        verification.getUser().verifyEmail();
+
+        return frontendUrl + "/login?verified=true";
     }
 
     @Transactional

@@ -5,6 +5,7 @@ import com.himedia.project_a_team04_backend.service.auth.AuthService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +28,14 @@ public class AuthController {
     ) {
         String deviceInfo = httpRequest.getHeader("User-Agent");
         return ResponseEntity.ok(authService.login(request, deviceInfo));
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<Void> verifyEmail(@RequestParam String token) {
+        String redirectUrl = authService.verifyEmail(token);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.LOCATION, redirectUrl);
+        return ResponseEntity.status(HttpStatus.FOUND).headers(headers).build();
     }
 
     @SecurityRequirement(name = "bearerAuth")
