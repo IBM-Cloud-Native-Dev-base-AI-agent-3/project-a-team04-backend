@@ -3,11 +3,14 @@ package com.himedia.project_a_team04_backend.service.auth;
 import com.himedia.project_a_team04_backend.config.JwtUtil;
 import com.himedia.project_a_team04_backend.dto.auth.AuthDto;
 import com.himedia.project_a_team04_backend.entity.auth.EmailVerificationEntity;
+import com.himedia.project_a_team04_backend.entity.auth.PasswordResetEntity;
 import com.himedia.project_a_team04_backend.entity.auth.RefreshTokenEntity;
 import com.himedia.project_a_team04_backend.entity.user.UserEntity;
 import com.himedia.project_a_team04_backend.repository.auth.EmailVerificationRepository;
+import com.himedia.project_a_team04_backend.repository.auth.PasswordResetRepository;
 import com.himedia.project_a_team04_backend.repository.auth.RefreshTokenRepository;
 import com.himedia.project_a_team04_backend.repository.user.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -29,8 +32,11 @@ public class AuthService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final EmailVerificationRepository emailVerificationRepository;
+    private final PasswordResetRepository passwordResetRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+    private final BrevoEmailService brevoEmailService;
 
     @Value("${app.frontend-url}")
     private String frontendUrl;
@@ -40,13 +46,19 @@ public class AuthService implements UserDetailsService {
     public AuthService(UserRepository userRepository,
                        RefreshTokenRepository refreshTokenRepository,
                        EmailVerificationRepository emailVerificationRepository,
+                       PasswordResetRepository passwordResetRepository,
                        @Lazy AuthenticationManager authenticationManager,
-                       JwtUtil jwtUtil) {
+                       JwtUtil jwtUtil,
+                       PasswordEncoder passwordEncoder,
+                       BrevoEmailService brevoEmailService) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.emailVerificationRepository = emailVerificationRepository;
+        this.passwordResetRepository = passwordResetRepository;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
+        this.brevoEmailService = brevoEmailService;
     }
 
     @Override
@@ -113,6 +125,38 @@ public class AuthService implements UserDetailsService {
         verification.getUser().verifyEmail();
 
         return frontendUrl + "/login?verified=true";
+    }
+
+    @Transactional
+    public void sendPasswordReset(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .filter(u -> !u.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("가입된 이메일이 없습니다."));
+
+        String token = java.util.UUID.randomUUID().toString();
+        passwordResetRepository.save(PasswordResetEntity.builder()
+                .user(user)
+                .tokenHash(token)
+                .expiredAt(LocalDateTime.now().plusMinutes(30))
+                .build());
+
+        brevoEmailService.sendPasswordResetEmail(email, token);
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetEntity reset = passwordResetRepository.findByTokenHash(token)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 토큰입니다."));
+
+        if (reset.getExpiredAt().isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("만료된 토큰입니다.");
+        }
+        if (reset.isUsed()) {
+            throw new IllegalStateException("이미 사용된 토큰입니다.");
+        }
+
+        reset.markUsed();
+        reset.getUser().changePassword(passwordEncoder.encode(newPassword));
     }
 
     @Transactional
