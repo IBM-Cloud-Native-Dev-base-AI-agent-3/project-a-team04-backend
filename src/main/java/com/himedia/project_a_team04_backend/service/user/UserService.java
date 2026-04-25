@@ -1,21 +1,29 @@
 package com.himedia.project_a_team04_backend.service.user;
 
 import com.himedia.project_a_team04_backend.dto.user.UserDto;
+import com.himedia.project_a_team04_backend.entity.auth.EmailVerificationEntity;
 import com.himedia.project_a_team04_backend.entity.user.UserEntity;
 import com.himedia.project_a_team04_backend.entity.user.UserRole;
+import com.himedia.project_a_team04_backend.repository.auth.EmailVerificationRepository;
 import com.himedia.project_a_team04_backend.repository.user.UserRepository;
+import com.himedia.project_a_team04_backend.service.auth.BrevoEmailService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final EmailVerificationRepository emailVerificationRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BrevoEmailService brevoEmailService;
 
     @Transactional
     public UserDto.ProfileResponse signup(UserDto.SignupRequest request) {
@@ -31,6 +39,15 @@ public class UserService {
                 .nickname(request.getNickname())
                 .role(request.getRole() != null ? request.getRole() : UserRole.ROLE_USER)
                 .build());
+
+        String token = UUID.randomUUID().toString();
+        emailVerificationRepository.save(EmailVerificationEntity.builder()
+                .user(savedUser)
+                .tokenHash(token)
+                .expiredAt(LocalDateTime.now().plusMinutes(30))
+                .build());
+
+        brevoEmailService.sendVerificationEmail(savedUser.getEmail(), token);
 
         return new UserDto.ProfileResponse(savedUser);
     }
@@ -64,4 +81,3 @@ public class UserService {
         return value == null || value.trim().isEmpty();
     }
 }
-
