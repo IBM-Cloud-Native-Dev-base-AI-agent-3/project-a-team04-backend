@@ -42,4 +42,8 @@ public class EmailVerificationEntity {
         this.tokenHash = tokenHash;
         this.expiredAt = expiredAt;
     }
+
+    public void markVerified() {
+        this.verified = true;
+    }
 }

@@ -111,4 +111,8 @@ public class UserEntity {
         if (nickname != null && !nickname.isBlank()) this.nickname = nickname;
         if (profileImageUrl != null) this.profileImageUrl = profileImageUrl;
     }
+
+    public void verifyEmail() {
+        this.emailVerified = true;
+    }
 }
