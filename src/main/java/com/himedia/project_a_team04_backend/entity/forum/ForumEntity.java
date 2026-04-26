@@ -63,10 +63,6 @@ public class ForumEntity {
     @OneToMany(mappedBy = "forum")
     private List<ForumRegistrationEntity> registrations = new ArrayList<>();
 
-    // RESTRICT: 참석자가 있는 포럼은 삭제 불가
-    @OneToMany(mappedBy = "forum")
-    private List<ForumAttendeeEntity> attendees = new ArrayList<>();
-
     @Builder
     public ForumEntity(String slug, ForumStatus status, LocalDateTime eventDate,
                        String thumbnailUrl, int maxParticipants, UserEntity createdByUser) {

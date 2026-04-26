@@ -3,7 +3,6 @@ package com.himedia.project_a_team04_backend.entity.user;
 import com.himedia.project_a_team04_backend.entity.auth.EmailVerificationEntity;
 import com.himedia.project_a_team04_backend.entity.auth.PasswordResetEntity;
 import com.himedia.project_a_team04_backend.entity.auth.RefreshTokenEntity;
-import com.himedia.project_a_team04_backend.entity.forum.ForumAttendeeEntity;
 import com.himedia.project_a_team04_backend.entity.forum.ForumEntity;
 import com.himedia.project_a_team04_backend.entity.forum.ForumRegistrationEntity;
 import com.himedia.project_a_team04_backend.entity.post.PostEntity;
@@ -82,10 +81,6 @@ public class UserEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<ForumRegistrationEntity> forumRegistrations = new ArrayList<>();
 
-    // CASCADE: 유저 삭제 시 포럼 참석 정보 함께 삭제
-    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<ForumAttendeeEntity> forumAttendees = new ArrayList<>();
-
     // RESTRICT: 게시글이 있는 유저는 삭제 불가
     @OneToMany(mappedBy = "user")
     private List<PostEntity> posts = new ArrayList<>();
@@ -118,5 +113,10 @@ public class UserEntity {
 
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
+    }
+
+    public void withdraw() {
+        this.isDeleted = true;
+        this.email = "DELETED_" + this.id + "@deleted.com";
     }
 }
