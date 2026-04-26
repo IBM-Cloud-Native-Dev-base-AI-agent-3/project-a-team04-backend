@@ -110,6 +110,15 @@ public class ForumRegistrationService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public ForumRegistrationDto.Response getMyRegistration(Long forumId, String email) {
+        UserEntity user = findUserByEmail(email);
+
+        return registrationRepository.findByForum_IdAndUser_Id(forumId, user.getId())
+                .map(ForumRegistrationDto.Response::new)
+                .orElseThrow(() -> new EntityNotFoundException("신청 내역이 없습니다."));
+    }
+
     private UserEntity findUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .filter(u -> !u.isDeleted())

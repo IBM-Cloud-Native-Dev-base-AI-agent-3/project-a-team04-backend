@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface ForumRegistrationRepository extends JpaRepository<ForumRegistrationEntity, Long> {
     boolean existsByForum_IdAndUser_Id(Long forumId, Long userId);
+    Optional<ForumRegistrationEntity> findByForum_IdAndUser_Id(Long forumId, Long userId);
     Optional<ForumRegistrationEntity> findByIdAndForum_Id(Long id, Long forumId);
     List<ForumRegistrationEntity> findByForum_Id(Long forumId);
 }

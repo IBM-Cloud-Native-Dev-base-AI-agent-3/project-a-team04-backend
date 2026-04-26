@@ -40,6 +40,15 @@ public class ForumController {
     }
 
     @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/{forumId}/my-registration")
+    public ResponseEntity<ForumRegistrationDto.Response> getMyRegistration(
+            @PathVariable Long forumId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(forumRegistrationService.getMyRegistration(forumId, userDetails.getUsername()));
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/{forumId}/registrations")
     public ResponseEntity<ForumRegistrationDto.Response> apply(
             @PathVariable Long forumId,
