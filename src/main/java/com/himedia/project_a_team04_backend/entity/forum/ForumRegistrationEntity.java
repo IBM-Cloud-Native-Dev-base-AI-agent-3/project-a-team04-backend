@@ -64,4 +64,11 @@ public class ForumRegistrationEntity {
         this.status = status;
         this.note = note;
     }
+
+    public void updateStatus(ForumRegistrationStatus status, String rejectReason, UserEntity reviewer) {
+        this.status = status;
+        this.rejectReason = rejectReason;
+        this.reviewedByUser = reviewer;
+        this.reviewedAt = LocalDateTime.now();
+    }
 }

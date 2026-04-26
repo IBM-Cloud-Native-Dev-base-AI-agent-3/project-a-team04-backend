@@ -68,6 +68,73 @@ public class BrevoEmailService {
         restTemplate.postForEntity(BREVO_API_URL, new HttpEntity<>(body, headers), String.class);
     }
 
+    public void sendForumApplyEmail(String toEmail, String forumTitle) {
+        Map<String, Object> body = Map.of(
+                "sender", Map.of("name", senderName, "email", senderEmail),
+                "to", List.of(Map.of("email", toEmail)),
+                "subject", "[" + senderName + "] 포럼 신청이 접수되었습니다",
+                "htmlContent", buildForumApplyHtml(forumTitle)
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("api-key", apiKey);
+
+        restTemplate.postForEntity(BREVO_API_URL, new HttpEntity<>(body, headers), String.class);
+    }
+
+    public void sendForumReviewEmail(String toEmail, String forumTitle, boolean accepted, String rejectReason) {
+        String subject = accepted
+                ? "[" + senderName + "] 포럼 신청이 승인되었습니다"
+                : "[" + senderName + "] 포럼 신청이 거절되었습니다";
+
+        Map<String, Object> body = Map.of(
+                "sender", Map.of("name", senderName, "email", senderEmail),
+                "to", List.of(Map.of("email", toEmail)),
+                "subject", subject,
+                "htmlContent", buildForumReviewHtml(forumTitle, accepted, rejectReason)
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("api-key", apiKey);
+
+        restTemplate.postForEntity(BREVO_API_URL, new HttpEntity<>(body, headers), String.class);
+    }
+
+    private String buildForumApplyHtml(String forumTitle) {
+        return """
+                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+                  <h2>포럼 신청 접수 완료</h2>
+                  <p><strong>%s</strong> 포럼 신청이 정상적으로 접수되었습니다.</p>
+                  <p>검토 후 결과를 이메일로 안내드리겠습니다.</p>
+                </div>
+                """.formatted(forumTitle);
+    }
+
+    private String buildForumReviewHtml(String forumTitle, boolean accepted, String rejectReason) {
+        if (accepted) {
+            return """
+                    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+                      <h2>포럼 신청 승인</h2>
+                      <p><strong>%s</strong> 포럼 신청이 <strong style="color:#16a34a;">승인</strong>되었습니다.</p>
+                      <p>포럼 당일 참석해주시기 바랍니다.</p>
+                    </div>
+                    """.formatted(forumTitle);
+        } else {
+            return """
+                    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+                      <h2>포럼 신청 거절</h2>
+                      <p><strong>%s</strong> 포럼 신청이 <strong style="color:#dc2626;">거절</strong>되었습니다.</p>
+                      %s
+                    </div>
+                    """.formatted(forumTitle,
+                    rejectReason != null && !rejectReason.isBlank()
+                            ? "<p>사유: " + rejectReason + "</p>"
+                            : "");
+        }
+    }
+
     private String buildPasswordResetHtml(String resetLink) {
         return """
                 <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
