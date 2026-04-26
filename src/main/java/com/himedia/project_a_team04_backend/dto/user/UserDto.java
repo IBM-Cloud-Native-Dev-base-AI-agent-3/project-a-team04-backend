@@ -27,6 +27,7 @@ public class UserDto {
     @Getter
     @NoArgsConstructor
     public static class WithdrawalRequest {
+        private String password;
         private String reason;
     }
 

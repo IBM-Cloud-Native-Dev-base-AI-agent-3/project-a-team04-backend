@@ -23,6 +23,9 @@ public class UserWithdrawalEntity {
     @JoinColumn(name = "user_id")
     private UserEntity user;
 
+    @Column(nullable = false, length = 255)
+    private String email;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String reason;
 
@@ -34,8 +37,9 @@ public class UserWithdrawalEntity {
     private LocalDateTime createdAt;
 
     @Builder
-    public UserWithdrawalEntity(UserEntity user, String reason, LocalDateTime withdrawnAt) {
+    public UserWithdrawalEntity(UserEntity user, String email, String reason, LocalDateTime withdrawnAt) {
         this.user = user;
+        this.email = email;
         this.reason = reason;
         this.withdrawnAt = withdrawnAt;
     }
