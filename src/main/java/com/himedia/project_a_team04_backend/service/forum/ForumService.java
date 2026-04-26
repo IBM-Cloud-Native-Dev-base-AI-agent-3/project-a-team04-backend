@@ -87,7 +87,8 @@ public class ForumService {
                                     .stream().findFirst().orElse(null));
                     String title = translation != null ? translation.getTitle() : "";
                     String location = translation != null ? translation.getLocation() : "";
-                    return new ForumDto.ListResponse(forum, title, location, locale);
+                    String speakers = translation != null ? translation.getSpeakers() : null;
+                    return new ForumDto.ListResponse(forum, title, location, speakers, locale);
                 })
                 .collect(Collectors.toList());
     }
