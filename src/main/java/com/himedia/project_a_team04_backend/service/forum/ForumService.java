@@ -7,7 +7,9 @@ import com.himedia.project_a_team04_backend.entity.forum.ForumEntity;
 import com.himedia.project_a_team04_backend.entity.forum.ForumMediaEntity;
 import com.himedia.project_a_team04_backend.entity.forum.ForumTranslationEntity;
 import com.himedia.project_a_team04_backend.entity.user.UserEntity;
+import com.himedia.project_a_team04_backend.entity.forum.ForumRegistrationStatus;
 import com.himedia.project_a_team04_backend.repository.forum.ForumMediaRepository;
+import com.himedia.project_a_team04_backend.repository.forum.ForumRegistrationRepository;
 import com.himedia.project_a_team04_backend.repository.forum.ForumRepository;
 import com.himedia.project_a_team04_backend.repository.forum.ForumTranslationRepository;
 import com.himedia.project_a_team04_backend.repository.user.UserRepository;
@@ -27,6 +29,7 @@ public class ForumService {
     private final ForumRepository forumRepository;
     private final ForumTranslationRepository forumTranslationRepository;
     private final ForumMediaRepository forumMediaRepository;
+    private final ForumRegistrationRepository forumRegistrationRepository;
     private final UserRepository userRepository;
 
     @Transactional
@@ -88,7 +91,8 @@ public class ForumService {
                     String title = translation != null ? translation.getTitle() : "";
                     String location = translation != null ? translation.getLocation() : "";
                     String speakers = translation != null ? translation.getSpeakers() : null;
-                    return new ForumDto.ListResponse(forum, title, location, speakers, locale);
+                    int acceptedCount = forumRegistrationRepository.countByForum_IdAndStatus(forum.getId(), ForumRegistrationStatus.ACCEPTED);
+                    return new ForumDto.ListResponse(forum, title, location, speakers, acceptedCount, locale);
                 })
                 .collect(Collectors.toList());
     }

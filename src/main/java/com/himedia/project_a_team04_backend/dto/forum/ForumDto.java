@@ -77,9 +77,10 @@ public class ForumDto {
         private final String title;
         private final String location;
         private final String speakers;
+        private final int acceptedCount;
         private final LocalDateTime createdAt;
 
-        public ListResponse(ForumEntity entity, String title, String location, String speakers, String locale) {
+        public ListResponse(ForumEntity entity, String title, String location, String speakers, int acceptedCount, String locale) {
             this.id = entity.getId();
             this.slug = entity.getSlug();
             this.status = entity.getStatus();
@@ -90,6 +91,7 @@ public class ForumDto {
             this.title = title;
             this.location = location;
             this.speakers = speakers;
+            this.acceptedCount = acceptedCount;
             this.createdAt = entity.getCreatedAt();
         }
     }
