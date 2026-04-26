@@ -37,7 +37,7 @@ public class UserService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .nickname(request.getNickname())
-                .role(request.getRole() != null ? request.getRole() : UserRole.ROLE_USER)
+                .role(UserRole.ROLE_USER)
                 .build());
 
         String token = UUID.randomUUID().toString();

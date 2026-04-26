@@ -15,7 +15,6 @@ public class UserDto {
         private String email;
         private String password;
         private String nickname;
-        private UserRole role; // 선택 옵션, 미입력 시 ROLE_USER
     }
 
     @Getter
