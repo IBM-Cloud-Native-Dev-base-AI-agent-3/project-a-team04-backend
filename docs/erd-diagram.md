@@ -7,7 +7,6 @@ erDiagram
     USERS ||--o{ POST_VIEWS : "1:N - 개별 사용자의 읽음 기록 | CASCADE"
     USERS ||--o{ FORUMS : "1:N - 포럼 개설 및 관리 권한 | RESTRICT"
     USERS ||--o{ FORUM_REGISTRATIONS : "1:N - 포럼 참가 신청서 제출 | CASCADE"
-    USERS ||--o{ FORUM_ATTENDEES : "1:N - 최종 확정된 참석자 정보 | CASCADE"
     USERS ||--o{ USER_WITHDRAWALS : "1:N - 탈퇴 이력 기록"
 
     POSTS ||--o{ POST_VIEWS : "1:N - 게시글별 중복 조회 방지 로그 | CASCADE"
@@ -15,11 +14,10 @@ erDiagram
     FORUMS ||--o{ FORUM_TRANSLATIONS : "1:N - 국가별 언어(ko/en) 매핑 | CASCADE"
     FORUMS ||--o{ FORUM_MEDIA : "1:N - 포럼 홍보 이미지/영상 리스트 | CASCADE"
     FORUMS ||--o{ FORUM_REGISTRATIONS : "1:N - 접수된 전체 신청 현황 | RESTRICT"
-    FORUMS ||--o{ FORUM_ATTENDEES : "1:N - 행사 당일 실제 출석 명단 | RESTRICT"
 
     USERS {
         BIGINT id PK "NOT NULL / auto_increment"
-        VARCHAR(255) email "NOT NULL / UNIQUE / 로그인용 이메일"
+        VARCHAR(255) email "NOT NULL / UNIQUE / 탈퇴 시 DELETED_{id}@deleted.com 으로 마스킹"
         VARCHAR(255) password "NOT NULL / BCrypt 해시된 비밀번호"
         VARCHAR(50) nickname "NOT NULL / 서비스 활동 닉네임"
         VARCHAR(500) profile_image_url "사용자 프로필 이미지 S3 경로"
@@ -124,19 +122,11 @@ erDiagram
         DATETIME updated_at "NOT NULL"
     }
 
-    FORUM_ATTENDEES {
-        BIGINT id PK "NOT NULL / auto_increment"
-        BIGINT forum_id FK "NOT NULL / 확정된 포럼 ID"
-        BIGINT user_id FK "NOT NULL / 참가 확정된 사용자 ID"
-        VARCHAR status "NOT NULL / ENUM: ATTENDED, CANCELLED, NO_SHOW"
-        DATETIME created_at "NOT NULL / 참석 확정 시각"
-        DATETIME updated_at "NOT NULL"
-    }
-
     USER_WITHDRAWALS {
         BIGINT id PK "NOT NULL / auto_increment"
-        BIGINT user_id FK "탈퇴 유저 ID (기록 보존용)"
-        TEXT reason "NOT NULL / 탈퇴 사유 (선택 항목 또는 직접 입력 사유 통합)"
+        BIGINT user_id FK "탈퇴 유저 ID (기록 보존용 / nullable)"
+        VARCHAR(255) email "NOT NULL / 탈퇴 당시 원본 이메일 (재가입 30일 제한 확인용)"
+        TEXT reason "NOT NULL / 탈퇴 사유"
         DATETIME withdrawn_at "NOT NULL / 탈퇴 처리 완료 시각"
         DATETIME created_at "NOT NULL"
     }
