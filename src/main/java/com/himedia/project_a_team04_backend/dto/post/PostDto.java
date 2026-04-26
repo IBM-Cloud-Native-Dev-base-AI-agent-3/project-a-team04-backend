@@ -19,6 +19,7 @@ public class PostDto {
     public static class Response {
         private final Long id;
         private final Long userId;
+        private final String nickname;
         private final String title;
         private final String content;
         private final int viewCount;
@@ -28,6 +29,7 @@ public class PostDto {
         public Response(PostEntity post) {
             this.id = post.getId();
             this.userId = post.getUser().getId();
+            this.nickname = post.getUser().getNickname();
             this.title = post.getTitle();
             this.content = post.getContent();
             this.viewCount = post.getViewCount();
