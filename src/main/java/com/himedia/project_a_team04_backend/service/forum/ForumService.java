@@ -90,9 +90,10 @@ public class ForumService {
                                     .stream().findFirst().orElse(null));
                     String title = translation != null ? translation.getTitle() : "";
                     String location = translation != null ? translation.getLocation() : "";
+                    String description = translation != null ? translation.getDescription() : "";
                     String speakers = translation != null ? translation.getSpeakers() : null;
                     int acceptedCount = forumRegistrationRepository.countByForum_IdAndStatus(forum.getId(), ForumRegistrationStatus.ACCEPTED);
-                    return new ForumDto.ListResponse(forum, title, location, speakers, acceptedCount, locale);
+                    return new ForumDto.ListResponse(forum, title, description, location, speakers, acceptedCount, locale);
                 })
                 .collect(Collectors.toList());
     }
