@@ -30,7 +30,7 @@ public class ForumService {
     private final UserRepository userRepository;
 
     @Transactional
-    public ForumDto.Response create(String email, ForumDto.CreateRequest request) {
+    public ForumDto.Response create(String email, ForumDto.CreateRequest request, String locale) {
         UserEntity user = findUserByEmail(email);
 
         ForumEntity forum = forumRepository.save(ForumEntity.builder()
@@ -45,11 +45,11 @@ public class ForumService {
         List<ForumTranslationEntity> savedTranslations = saveTranslations(forum, request.getTranslations());
         List<ForumMediaEntity> savedMedia = saveMedia(forum, request.getMedia());
 
-        return toResponse(forum, savedTranslations, savedMedia);
+        return toResponse(forum, savedTranslations, savedMedia, locale);
     }
 
     @Transactional
-    public ForumDto.Response update(String email, Long forumId, ForumDto.CreateRequest request) {
+    public ForumDto.Response update(String email, Long forumId, ForumDto.CreateRequest request, String locale) {
         findUserByEmail(email);
 
         ForumEntity forum = forumRepository.findById(forumId)
@@ -58,14 +58,13 @@ public class ForumService {
         forum.update(request.getSlug(), request.getStatus(), request.getEventDate(),
                 request.getThumbnailUrl(), request.getMaxParticipants());
 
-        // 번역/미디어 전체 교체
         forumTranslationRepository.deleteAll(forumTranslationRepository.findByForum_Id(forumId));
         forumMediaRepository.deleteAll(forumMediaRepository.findByForum_Id(forumId));
 
         List<ForumTranslationEntity> savedTranslations = saveTranslations(forum, request.getTranslations());
         List<ForumMediaEntity> savedMedia = saveMedia(forum, request.getMedia());
 
-        return toResponse(forum, savedTranslations, savedMedia);
+        return toResponse(forum, savedTranslations, savedMedia, locale);
     }
 
     @Transactional
@@ -88,20 +87,20 @@ public class ForumService {
                                     .stream().findFirst().orElse(null));
                     String title = translation != null ? translation.getTitle() : "";
                     String location = translation != null ? translation.getLocation() : "";
-                    return new ForumDto.ListResponse(forum, title, location);
+                    return new ForumDto.ListResponse(forum, title, location, locale);
                 })
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public ForumDto.Response getDetail(Long forumId) {
+    public ForumDto.Response getDetail(Long forumId, String locale) {
         ForumEntity forum = forumRepository.findById(forumId)
                 .orElseThrow(() -> new EntityNotFoundException("Forum not found: " + forumId));
 
         List<ForumTranslationEntity> translations = forumTranslationRepository.findByForum_Id(forumId);
         List<ForumMediaEntity> media = forumMediaRepository.findByForum_Id(forumId);
 
-        return toResponse(forum, translations, media);
+        return toResponse(forum, translations, media, locale);
     }
 
     private UserEntity findUserByEmail(String email) {
@@ -112,14 +111,15 @@ public class ForumService {
 
     private ForumDto.Response toResponse(ForumEntity forum,
                                           List<ForumTranslationEntity> translations,
-                                          List<ForumMediaEntity> media) {
+                                          List<ForumMediaEntity> media,
+                                          String locale) {
         List<ForumTranslationDto.Response> translationResponses = translations.stream()
                 .map(ForumTranslationDto.Response::new)
                 .collect(Collectors.toList());
         List<ForumMediaDto.Response> mediaResponses = media.stream()
                 .map(ForumMediaDto.Response::new)
                 .collect(Collectors.toList());
-        return new ForumDto.Response(forum, translationResponses, mediaResponses);
+        return new ForumDto.Response(forum, translationResponses, mediaResponses, locale);
     }
 
     private List<ForumTranslationEntity> saveTranslations(ForumEntity forum,

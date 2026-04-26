@@ -36,6 +36,7 @@ public class ForumDto {
         private final Long id;
         private final String slug;
         private final ForumStatus status;
+        private final String statusLabel;
         private final LocalDateTime eventDate;
         private final String thumbnailUrl;
         private final int maxParticipants;
@@ -47,10 +48,12 @@ public class ForumDto {
 
         public Response(ForumEntity entity,
                         List<ForumTranslationDto.Response> translations,
-                        List<ForumMediaDto.Response> media) {
+                        List<ForumMediaDto.Response> media,
+                        String locale) {
             this.id = entity.getId();
             this.slug = entity.getSlug();
             this.status = entity.getStatus();
+            this.statusLabel = entity.getStatus().getLabel(locale);
             this.eventDate = entity.getEventDate();
             this.thumbnailUrl = entity.getThumbnailUrl();
             this.maxParticipants = entity.getMaxParticipants();
@@ -67,6 +70,7 @@ public class ForumDto {
         private final Long id;
         private final String slug;
         private final ForumStatus status;
+        private final String statusLabel;
         private final LocalDateTime eventDate;
         private final String thumbnailUrl;
         private final int maxParticipants;
@@ -74,10 +78,11 @@ public class ForumDto {
         private final String location;
         private final LocalDateTime createdAt;
 
-        public ListResponse(ForumEntity entity, String title, String location) {
+        public ListResponse(ForumEntity entity, String title, String location, String locale) {
             this.id = entity.getId();
             this.slug = entity.getSlug();
             this.status = entity.getStatus();
+            this.statusLabel = entity.getStatus().getLabel(locale);
             this.eventDate = entity.getEventDate();
             this.thumbnailUrl = entity.getThumbnailUrl();
             this.maxParticipants = entity.getMaxParticipants();
