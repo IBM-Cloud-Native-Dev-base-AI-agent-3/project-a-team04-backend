@@ -17,37 +17,60 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/forums")
+@RequestMapping("/admin/forums")
 @RequiredArgsConstructor
-public class ForumController {
+@SecurityRequirement(name = "bearerAuth")
+public class AdminForumController {
 
     private final ForumService forumService;
     private final ForumRegistrationService forumRegistrationService;
 
-    @GetMapping
-    public ResponseEntity<List<ForumDto.ListResponse>> getList(
-            @RequestParam(defaultValue = "ko") String locale
-    ) {
-        return ResponseEntity.ok(forumService.getList(locale));
-    }
-
-    @GetMapping("/{forumId}")
-    public ResponseEntity<ForumDto.Response> getDetail(
-            @PathVariable Long forumId,
-            @RequestParam(defaultValue = "ko") String locale
-    ) {
-        return ResponseEntity.ok(forumService.getDetail(forumId, locale));
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @PostMapping("/{forumId}/registrations")
-    public ResponseEntity<ForumRegistrationDto.Response> apply(
-            @PathVariable Long forumId,
+    @PostMapping
+    public ResponseEntity<ForumDto.Response> create(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody ForumRegistrationDto.ApplyRequest request
+            @RequestBody ForumDto.CreateRequest request,
+            @RequestParam(defaultValue = "ko") String locale
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(forumRegistrationService.apply(forumId, userDetails.getUsername(), request));
+                .body(forumService.create(userDetails.getUsername(), request, locale));
+    }
+
+    @PatchMapping("/{forumId}")
+    public ResponseEntity<ForumDto.Response> update(
+            @PathVariable Long forumId,
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody ForumDto.CreateRequest request,
+            @RequestParam(defaultValue = "ko") String locale
+    ) {
+        return ResponseEntity.ok(forumService.update(userDetails.getUsername(), forumId, request, locale));
+    }
+
+    @DeleteMapping("/{forumId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable Long forumId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        forumService.delete(userDetails.getUsername(), forumId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{forumId}/registrations")
+    public ResponseEntity<List<ForumRegistrationDto.Response>> getRegistrations(
+            @PathVariable Long forumId
+    ) {
+        return ResponseEntity.ok(forumRegistrationService.getList(forumId));
+    }
+
+    @PatchMapping("/{forumId}/registrations/{registrationId}/review")
+    public ResponseEntity<ForumRegistrationDto.Response> review(
+            @PathVariable Long forumId,
+            @PathVariable Long registrationId,
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody ForumRegistrationDto.ReviewRequest request
+    ) {
+        return ResponseEntity.ok(
+                forumRegistrationService.review(forumId, registrationId, userDetails.getUsername(), request)
+        );
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
