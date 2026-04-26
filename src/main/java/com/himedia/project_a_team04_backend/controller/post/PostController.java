@@ -23,10 +23,12 @@ import java.util.Map;
 public class PostController {
     private final PostService postService;
 
-    // TODO: Security 적용 후 @RequestParam userId 제거, @AuthenticationPrincipal로 교체
+    @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
     @PostMapping
-    public ResponseEntity<PostDto.Response> insert(@RequestParam Long userId, @RequestBody PostDto.Request request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.insert(userId, request));
+    public ResponseEntity<PostDto.Response> insert(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody PostDto.Request request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(postService.insert(userDetails.getUsername(), request));
     }
 
     @GetMapping
@@ -46,20 +48,21 @@ public class PostController {
         return ResponseEntity.ok(postService.getPostDetail(postId, userEmail, ipAddress));
     }
 
-    // TODO: Security 적용 후 @RequestParam userId 제거, @AuthenticationPrincipal로 교체
+    @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
     @PatchMapping("/{postId}")
     public ResponseEntity<PostModifyDto.Response> update(
             @PathVariable Long postId,
-            @RequestParam Long userId,
-            @RequestBody PostModifyDto.Request request
-    ) {
-        return ResponseEntity.ok(postService.update(postId, userId, request));
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody PostModifyDto.Request request) {
+        return ResponseEntity.ok(postService.update(postId, userDetails.getUsername(), request));
     }
 
-    // TODO: Security 적용 후 @RequestParam userId 제거, @AuthenticationPrincipal로 교체
+    @io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> delete(@PathVariable Long postId, @RequestParam Long userId) {
-        postService.delete(postId, userId);
+    public ResponseEntity<Void> delete(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        postService.delete(postId, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 

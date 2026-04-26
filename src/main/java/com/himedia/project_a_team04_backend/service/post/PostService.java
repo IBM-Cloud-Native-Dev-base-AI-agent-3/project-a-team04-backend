@@ -25,11 +25,11 @@ public class PostService {
     private final PostViewRepository postViewRepository;
     private final UserRepository userRepository;
 
-    // TODO: Security 적용 후 userId 제거, @AuthenticationPrincipal UserEntity로 교체
     @Transactional
-    public PostDto.Response insert(Long userId, PostDto.Request request) {
-        UserEntity user = userRepository.findByIdAndIsDeletedFalse(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + userId));
+    public PostDto.Response insert(String email, PostDto.Request request) {
+        UserEntity user = userRepository.findByEmail(email)
+                .filter(u -> !u.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + email));
 
         PostEntity savedPost = postRepository.save(PostEntity.builder()
                 .user(user)
@@ -72,8 +72,12 @@ public class PostService {
     }
 
     @Transactional
-    public PostModifyDto.Response update(Long postId, Long userId, PostModifyDto.Request request) {
-        PostEntity post = postRepository.findByIdAndUser_IdAndIsDeletedFalse(postId, userId)
+    public PostModifyDto.Response update(Long postId, String email, PostModifyDto.Request request) {
+        UserEntity user = userRepository.findByEmail(email)
+                .filter(u -> !u.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + email));
+
+        PostEntity post = postRepository.findByIdAndUser_IdAndIsDeletedFalse(postId, user.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found: " + postId));
 
         post.modify(request.getTitle(), request.getContent());
@@ -81,8 +85,12 @@ public class PostService {
     }
 
     @Transactional
-    public void delete(Long postId, Long userId) {
-        PostEntity post = postRepository.findByIdAndUser_IdAndIsDeletedFalse(postId, userId)
+    public void delete(Long postId, String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .filter(u -> !u.isDeleted())
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + email));
+
+        PostEntity post = postRepository.findByIdAndUser_IdAndIsDeletedFalse(postId, user.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Post not found: " + postId));
 
         post.softDelete();
