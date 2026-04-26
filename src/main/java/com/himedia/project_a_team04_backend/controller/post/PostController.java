@@ -8,7 +8,11 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -30,9 +34,16 @@ public class PostController {
         return ResponseEntity.ok(postService.getAllPosts());
     }
 
-    @GetMapping("/{postId}")
-    public ResponseEntity<PostDetailDto.Response> getPostDetail(@PathVariable Long postId) {
-        return ResponseEntity.ok(postService.getPostDetail(postId));
+    @GetMapping("/{postId}/view")
+    public ResponseEntity<PostDetailDto.Response> getPostDetail(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal UserDetails userDetails,
+            HttpServletRequest request) {
+        String userEmail = userDetails != null ? userDetails.getUsername() : null;
+        String ipAddress = request.getHeader("X-Forwarded-For") != null
+                ? request.getHeader("X-Forwarded-For").split(",")[0].trim()
+                : request.getRemoteAddr();
+        return ResponseEntity.ok(postService.getPostDetail(postId, userEmail, ipAddress));
     }
 
     // TODO: Security 적용 후 @RequestParam userId 제거, @AuthenticationPrincipal로 교체

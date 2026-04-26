@@ -63,6 +63,10 @@ public class PostEntity {
         this.content = content;
     }
 
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
+
     public void softDelete() {
         this.isDeleted = true;
     }

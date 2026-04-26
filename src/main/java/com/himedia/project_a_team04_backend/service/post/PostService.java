@@ -4,8 +4,10 @@ import com.himedia.project_a_team04_backend.dto.post.PostDto;
 import com.himedia.project_a_team04_backend.dto.post.PostDetailDto;
 import com.himedia.project_a_team04_backend.dto.post.PostModifyDto;
 import com.himedia.project_a_team04_backend.entity.post.PostEntity;
+import com.himedia.project_a_team04_backend.entity.post.PostViewEntity;
 import com.himedia.project_a_team04_backend.entity.user.UserEntity;
 import com.himedia.project_a_team04_backend.repository.post.PostRepository;
+import com.himedia.project_a_team04_backend.repository.post.PostViewRepository;
 import com.himedia.project_a_team04_backend.repository.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final PostViewRepository postViewRepository;
     private final UserRepository userRepository;
 
     // TODO: Security 적용 후 userId 제거, @AuthenticationPrincipal UserEntity로 교체
@@ -45,10 +48,26 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
-    public PostDetailDto.Response getPostDetail(Long postId) {
+    @Transactional
+    public PostDetailDto.Response getPostDetail(Long postId, String userEmail, String ipAddress) {
         PostEntity post = postRepository.findByIdAndIsDeletedFalse(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post not found: " + postId));
+
+        if (userEmail != null) {
+            userRepository.findByEmail(userEmail)
+                    .filter(u -> !u.isDeleted())
+                    .ifPresent(user -> {
+                        if (!postViewRepository.existsByPost_IdAndUser_Id(postId, user.getId())) {
+                            postViewRepository.save(PostViewEntity.builder()
+                                    .post(post)
+                                    .user(user)
+                                    .ipAddress(ipAddress)
+                                    .build());
+                            post.increaseViewCount();
+                        }
+                    });
+        }
+
         return new PostDetailDto.Response(post);
     }
 
