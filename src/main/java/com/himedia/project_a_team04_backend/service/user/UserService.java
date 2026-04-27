@@ -92,10 +92,6 @@ public class UserService {
                 .filter(u -> !u.isDeleted())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 올바르지 않습니다.");
-        }
-
         String originalEmail = user.getEmail();
         LocalDateTime now = LocalDateTime.now();
 
